@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asni Guest House - Jimma Ferenj Arada, Ethiopia</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ethiopia: {
+                            green: '#009A44',
+                            yellow: '#FED100',
+                            red: '#E21118',
+                            gold: '#D4AF37',
+                            dark: '#0F172A'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Embedded Glassmorphism & Custom CSS -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(51, 65, 85, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.8); }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+            .glass-panel, .glass-card { background: white !important; border: 1px solid #ccc !important; color: black !important; }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden text-slate-100 bg-slate-950">
+
+    <!-- TOP HEADER -->
+    <header class="no-print bg-slate-900/90 border-b border-slate-800 px-4 py-3 flex items-center justify-between z-20 shrink-0">
+        <div class="flex items-center gap-3">
+            <button id="mobileMenuBtn" class="md:hidden text-slate-400 hover:text-white p-2 text-xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-amber-500 to-red-600 flex items-center justify-center font-bold text-slate-950 text-xl shadow-lg shadow-amber-500/10">
+                    A
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg leading-tight tracking-wide text-amber-400 flex items-center gap-2">
+                        Asni Guest House
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Jimma</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 flex items-center gap-1">
+                        <i class="fa-solid fa-location-dot text-emerald-500"></i> Ferenj Arada, Jimma, Ethiopia
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Switcher & Live Connection Status -->
+        <div class="flex items-center gap-3">
+            <!-- D1 API Sync status -->
+            <div id="d1SyncBadge" class="hidden sm:flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/60 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="syncText" class="text-slate-300 font-mono">SQLite Local Active</span>
+            </div>
+
+            <!-- Role Selector -->
+            <div class="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-amber-500/30">
+                <i class="fa-solid fa-user-shield text-amber-400 text-sm"></i>
+                <select id="roleSelect" class="bg-transparent text-xs sm:text-sm font-semibold text-slate-200 outline-none cursor-pointer">
+                    <option value="Admin" class="bg-slate-800">Admin (Full CRUD)</option>
+                    <option value="Receptionist" class="bg-slate-800">Receptionist (Bookings & Dining)</option>
+                    <option value="Guest" class="bg-slate-800">Guest (View Only)</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside id="sidebar" class="no-print absolute md:relative z-30 w-64 h-full bg-slate-900/95 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
+            <div class="p-4 space-y-1 overflow-y-auto">
+                <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Navigation Modules</div>
+                <nav class="space-y-1" id="navContainer">
+                    <button data-tab="dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all active bg-slate-800 text-amber-400 font-semibold">
+                        <i class="fa-solid fa-chart-pie w-5 text-center text-amber-400"></i> Dashboard
+                    </button>
+                    <button data-tab="rooms" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-bed w-5 text-center text-emerald-400"></i> Rooms CRUD
+                    </button>
+                    <button data-tab="guests" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-users w-5 text-center text-sky-400"></i> Guest Profiles
+                    </button>
+                    <button data-tab="bookings" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-calendar-check w-5 text-center text-indigo-400"></i> Bookings & Matrix
+                    </button>
+                    <button data-tab="dining" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-utensils w-5 text-center text-rose-400"></i> Restaurant & Menu
+                    </button>
+                    <button data-tab="staff" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all admin-only">
+                        <i class="fa-solid fa-user-gear w-5 text-center text-yellow-400"></i> Staff & Privileges
+                    </button>
+                    <button data-tab="reports" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all admin-only">
+                        <i class="fa-solid fa-file-invoice-dollar w-5 text-center text-emerald-400"></i> Financial Ledger
+                    </button>
+                    <button data-tab="banners" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-bullhorn w-5 text-center text-purple-400"></i> Banners & Ads
+                    </button>
+                    <button data-tab="sqlconsole" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all admin-only">
+                        <i class="fa-solid fa-database w-5 text-center text-teal-400"></i> Cloudflare D1 Console
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Footer info -->
+            <div class="p-4 border-t border-slate-800 bg-slate-950/60 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-400">Currency:</span>
+                    <span class="font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-500/30">ETB / Birr</span>
+                </div>
+                <div class="text-[10px] text-slate-500 text-center">
+                    Asni Guest House v2.5 Full CRUD Engine
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN BODY CONTENT -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6" id="mainContent">
+
+            <!-- TAB 1: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-page space-y-6">
+                <!-- Promo Slider / Banner Widget -->
+                <div id="dashboardBannerContainer" class="glass-panel rounded-2xl p-6 bg-gradient-to-r from-emerald-950/50 via-slate-900 to-amber-950/40 relative overflow-hidden border border-amber-500/20">
+                    <!-- Dynamic promo banner rendered by JS -->
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-panel p-5 rounded-2xl border-l-4 border-emerald-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Revenue</p>
+                            <h3 class="text-2xl font-black text-white mt-1" id="kpiTotalRev">0 ETB</h3>
+                            <p class="text-[11px] text-emerald-400 mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Room & Dining</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Occupancy Rate</p>
+                            <h3 class="text-2xl font-black text-white mt-1" id="kpiOccupancy">0%</h3>
+                            <p class="text-[11px] text-amber-400 mt-1" id="kpiOccupancySub">0 / 0 Rooms Occupied</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-bed"></i>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl border-l-4 border-sky-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Registered Guests</p>
+                            <h3 class="text-2xl font-black text-white mt-1" id="kpiGuests">0</h3>
+                            <p class="text-[11px] text-sky-400 mt-1">In CRM Database</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl border-l-4 border-rose-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Active Menu Items</p>
+                            <h3 class="text-2xl font-black text-white mt-1" id="kpiMenuItems">0</h3>
+                            <p class="text-[11px] text-rose-400 mt-1">Ethiopian & Global</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-bowl-food"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="glass-panel p-5 rounded-2xl lg:col-span-2">
+                        <h3 class="font-bold text-slate-200 text-base mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Revenue Analytics Trend (ETB)
+                        </h3>
+                        <div class="h-64 relative">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <h3 class="font-bold text-slate-200 text-base mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-amber-400"></i> Room Category Distribution
+                        </h3>
+                        <div class="h-64 relative flex items-center justify-center">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: ROOMS CRUD -->
+            <section id="tab-rooms" class="tab-page space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Rooms Management (CRUD)</h2>
+                        <p class="text-xs text-slate-400">Add, update pricing, change statuses, or remove guest rooms.</p>
+                    </div>
+                    <button id="btnCreateRoom" class="can-edit bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20">
+                        <i class="fa-solid fa-plus"></i> Add New Room
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+                            <thead class="uppercase bg-slate-800/80 text-slate-400 font-bold text-[10px]">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg">Room #</th>
+                                    <th class="px-4 py-3">Category</th>
+                                    <th class="px-4 py-3">Floor</th>
+                                    <th class="px-4 py-3">Rate (ETB)</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 text-right rounded-r-lg">CRUD Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roomsCrudTable" class="divide-y divide-slate-800">
+                                <!-- Dynamic JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: GUESTS CRUD -->
+            <section id="tab-guests" class="tab-page space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Guest CRM Directory (CRUD)</h2>
+                        <p class="text-xs text-slate-400">Manage guest contact details, identification, and residence profiles.</p>
+                    </div>
+                    <button id="btnCreateGuest" class="can-edit bg-sky-500 hover:bg-sky-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shadow-lg shadow-sky-500/20">
+                        <i class="fa-solid fa-user-plus"></i> Register Guest Profile
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+                            <thead class="uppercase bg-slate-800/80 text-slate-400 font-bold text-[10px]">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg">Guest Name</th>
+                                    <th class="px-4 py-3">Phone Number</th>
+                                    <th class="px-4 py-3">National ID / Passport</th>
+                                    <th class="px-4 py-3">City / Origin</th>
+                                    <th class="px-4 py-3 text-right rounded-r-lg">CRUD Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guestsCrudTable" class="divide-y divide-slate-800">
+                                <!-- Dynamic JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: BOOKINGS & CHECK-INS CRUD -->
+            <section id="tab-bookings" class="tab-page space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Bookings & Reservations (CRUD)</h2>
+                        <p class="text-xs text-slate-400">Manage room check-ins, extend stays, modify status, or cancel bookings.</p>
+                    </div>
+                    <button id="btnCreateBooking" class="can-edit bg-indigo-500 hover:bg-indigo-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20">
+                        <i class="fa-solid fa-calendar-plus"></i> New Check-in / Reservation
+                    </button>
+                </div>
+
+                <!-- Live Matrix -->
+                <div class="glass-panel rounded-2xl p-5 space-y-3">
+                    <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-grip text-amber-400"></i> Interactive Room Status Grid
+                    </h3>
+                    <div id="roomMatrixGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                        <!-- Dynamic Room Blocks -->
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+                            <thead class="uppercase bg-slate-800/80 text-slate-400 font-bold text-[10px]">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg">ID</th>
+                                    <th class="px-4 py-3">Guest Name</th>
+                                    <th class="px-4 py-3">Room</th>
+                                    <th class="px-4 py-3">Check-In</th>
+                                    <th class="px-4 py-3">Check-Out</th>
+                                    <th class="px-4 py-3">Total (ETB)</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 text-right rounded-r-lg">CRUD Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsCrudTable" class="divide-y divide-slate-800">
+                                <!-- Dynamic JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: RESTAURANT & MENU CRUD -->
+            <section id="tab-dining" class="tab-page space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Restaurant POS & Menu CRUD</h2>
+                        <p class="text-xs text-slate-400">Add dishes, order traditional Ethiopian meals & beverages, or book tables.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btnCreateMenuItem" class="can-edit bg-rose-500 hover:bg-rose-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Add Menu Item
+                        </button>
+                        <button id="btnOpenCartModal" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-cart-shopping"></i> Cart (<span id="cartCountBadge">0</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Dining Table Grid -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-chair text-amber-400"></i> Table Reservations Map
+                        </h3>
+                        <div id="diningTablesMap" class="grid grid-cols-2 gap-3">
+                            <!-- Dynamic Table buttons -->
+                        </div>
+                    </div>
+
+                    <!-- Menu Catalog -->
+                    <div class="glass-panel p-5 rounded-2xl lg:col-span-2 space-y-4">
+                        <h3 class="font-bold text-slate-200 text-sm flex items-center justify-between">
+                            <span><i class="fa-solid fa-utensils text-rose-400"></i> Cuisine & Beverage Catalog</span>
+                            <span class="text-xs text-amber-400 font-mono">Prices in ETB</span>
+                        </h3>
+                        <div id="menuCatalogGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Dynamic JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dining Orders Table -->
+                <div class="glass-panel rounded-2xl p-5 overflow-hidden">
+                    <h3 class="font-bold text-slate-200 text-sm mb-3">Kitchen Orders Queue (CRUD)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="uppercase bg-slate-800/80 text-slate-400 font-bold text-[10px]">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg">Order #</th>
+                                    <th class="px-4 py-3">Location / Table</th>
+                                    <th class="px-4 py-3">Items Summary</th>
+                                    <th class="px-4 py-3">Total (ETB)</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 text-right rounded-r-lg">CRUD Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersCrudTable" class="divide-y divide-slate-800">
+                                <!-- Dynamic JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: STAFF CRUD -->
+            <section id="tab-staff" class="tab-page space-y-6 hidden admin-only">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Staff Management (CRUD)</h2>
+                        <p class="text-xs text-slate-400">Add staff accounts, assign system access roles, and manage credentials.</p>
+                    </div>
+                    <button id="btnCreateStaff" class="bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Add New Employee
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+                            <thead class="uppercase bg-slate-800/80 text-slate-400 font-bold text-[10px]">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg">Full Name</th>
+                                    <th class="px-4 py-3">Username</th>
+                                    <th class="px-4 py-3">Role</th>
+                                    <th class="px-4 py-3 text-right rounded-r-lg">CRUD Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staffCrudTable" class="divide-y divide-slate-800">
+                                <!-- Dynamic JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: REPORTS & FINANCIAL LEDGER -->
+            <section id="tab-reports" class="tab-page space-y-6 hidden admin-only">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Financial Ledger & Invoices</h2>
+                        <p class="text-xs text-slate-400">Track all income transactions, generate printable receipts, or export CSV data.</p>
+                    </div>
+                    <button id="btnExportCSV" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-file-csv"></i> Export CSV Statement
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+                            <thead class="uppercase bg-slate-800/80 text-slate-400 font-bold text-[10px]">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg">ID</th>
+                                    <th class="px-4 py-3">Date</th>
+                                    <th class="px-4 py-3">Type</th>
+                                    <th class="px-4 py-3">Description</th>
+                                    <th class="px-4 py-3">Payer</th>
+                                    <th class="px-4 py-3">Amount (ETB)</th>
+                                    <th class="px-4 py-3 text-right rounded-r-lg">Receipt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerTableBody" class="divide-y divide-slate-800">
+                                <!-- Dynamic JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 8: BANNERS CRUD -->
+            <section id="tab-banners" class="tab-page space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Promotional Ad Banners (CRUD)</h2>
+                        <p class="text-xs text-slate-400">Configure promotional slides for Jimma tours, coffee ceremonies, and airport transfers.</p>
+                    </div>
+                    <button id="btnCreateBanner" class="can-edit bg-purple-500 hover:bg-purple-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Create New Banner
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="bannersCrudGrid">
+                    <!-- Dynamic JS -->
+                </div>
+            </section>
+
+            <!-- TAB 9: CLOUDFLARE D1 CONSOLE -->
+            <section id="tab-sqlconsole" class="tab-page space-y-6 hidden admin-only">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Cloudflare D1 SQL Console & Worker Bridge</h2>
+                        <p class="text-xs text-slate-400">Direct SQL execution engine with full CRUD support & worker URL sync configuration.</p>
+                    </div>
+                    <button id="btnResetSeed" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-semibold px-3.5 py-2 rounded-xl text-xs border border-rose-500/30">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Seed Data
+                    </button>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl space-y-3">
+                    <label class="text-xs font-bold text-amber-400 uppercase tracking-wider block">Cloudflare Worker API Connection URL</label>
+                    <div class="flex gap-2">
+                        <input type="url" id="workerUrlInput" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none" placeholder="https://asni-guest-house-api.your-subdomain.workers.dev">
+                        <button id="btnSaveWorkerUrl" class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Connect</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="glass-panel p-4 rounded-2xl space-y-3">
+                        <h3 class="font-bold text-slate-200 text-xs uppercase tracking-wider">Tables Schema Explorer</h3>
+                        <div id="schemaTree" class="font-mono text-xs text-slate-300 space-y-1">
+                            <!-- Dynamic schema list -->
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl lg:col-span-3 space-y-4">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-400 uppercase">Execute Direct SQL Query</label>
+                                <span class="text-xs text-emerald-400 font-mono">SELECT, INSERT, UPDATE, DELETE Supported</span>
+                            </div>
+                            <textarea id="sqlQueryInput" rows="4" class="w-full bg-slate-950 font-mono text-xs text-emerald-400 p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-teal-500" placeholder="SELECT * FROM rooms;"></textarea>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <button id="btnExecuteSQL" class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-play"></i> Run SQL Query
+                            </button>
+                            <span id="sqlExecDuration" class="text-xs text-slate-500">Execution time: 0ms</span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="text-[10px] uppercase font-bold text-slate-400">Output Result Matrix</div>
+                            <div id="sqlOutputBox" class="bg-slate-950 rounded-xl p-4 font-mono text-xs text-slate-300 overflow-x-auto min-h-[140px] max-h-[280px] border border-slate-800">
+                                // Output results will render here...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL 1: ROOM EDIT / CREATE -->
+    <div id="modalRoom" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2" id="modalRoomTitle">
+                    <i class="fa-solid fa-bed text-amber-400"></i> Room Form
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="formRoom" class="p-5 space-y-4">
+                <input type="hidden" id="roomEditId">
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Room Number</label>
+                    <input type="text" id="roomNumInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="105" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Category Type</label>
+                    <select id="roomTypeInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none">
+                        <option value="Standard">Standard</option>
+                        <option value="Deluxe">Deluxe</option>
+                        <option value="Family Suite">Family Suite</option>
+                        <option value="Executive Suite">Executive Suite</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300 block mb-1">Floor Level</label>
+                        <input type="number" id="roomFloorInput" min="1" value="1" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300 block mb-1">Nightly Rate (ETB)</label>
+                        <input type="number" id="roomRateInput" min="100" value="2000" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Initial Status</label>
+                    <select id="roomStatusInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none">
+                        <option value="Available">Available</option>
+                        <option value="Occupied">Occupied</option>
+                        <option value="Cleaning">Cleaning</option>
+                    </select>
+                </div>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" class="close-modal flex-1 bg-slate-800 text-slate-300 font-semibold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all">Save Room Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: GUEST EDIT / CREATE -->
+    <div id="modalGuest" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2" id="modalGuestTitle">
+                    <i class="fa-solid fa-user text-sky-400"></i> Guest Record
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="formGuest" class="p-5 space-y-4">
+                <input type="hidden" id="guestEditId">
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Full Name</label>
+                    <input type="text" id="guestNameInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="Abebe Bikila" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Phone Number</label>
+                    <input type="text" id="guestPhoneInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="+251 91 123 4567" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">National ID / Passport Number</label>
+                    <input type="text" id="guestIdInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="ETH-998822" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">City / Origin Address</label>
+                    <input type="text" id="guestCityInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="Addis Ababa" required>
+                </div>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" class="close-modal flex-1 bg-slate-800 text-slate-300 font-semibold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all">Save Guest Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: BOOKING EDIT / CREATE -->
+    <div id="modalBooking" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2" id="modalBookingTitle">
+                    <i class="fa-solid fa-calendar text-indigo-400"></i> Reservation Form
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="formBooking" class="p-5 space-y-4">
+                <input type="hidden" id="bookingEditId">
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Select Registered Guest</label>
+                    <select id="bookingGuestSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" required></select>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Assign Room</label>
+                    <select id="bookingRoomSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" required></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300 block mb-1">Check-In Date</label>
+                        <input type="date" id="bookingCheckinInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300 block mb-1">Check-Out Date</label>
+                        <input type="date" id="bookingCheckoutInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Reservation Status</label>
+                    <select id="bookingStatusInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none">
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Checked-In">Checked-In</option>
+                        <option value="Checked-Out">Checked-Out</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" class="close-modal flex-1 bg-slate-800 text-slate-300 font-semibold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all">Save Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: MENU ITEM EDIT / CREATE -->
+    <div id="modalMenu" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2" id="modalMenuTitle">
+                    <i class="fa-solid fa-utensils text-rose-400"></i> Cuisine Item
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="formMenu" class="p-5 space-y-4">
+                <input type="hidden" id="menuEditId">
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Item Title</label>
+                    <input type="text" id="menuNameInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="Special Kitfo" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Category</label>
+                    <select id="menuCategoryInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none">
+                        <option value="Ethiopian">Traditional Ethiopian</option>
+                        <option value="Beverage">Coffee & Beverages</option>
+                        <option value="International">International Cuisine</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Price (ETB)</label>
+                    <input type="number" id="menuPriceInput" min="10" value="250" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Description</label>
+                    <textarea id="menuDescInput" rows="2" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="Freshly prepared with authentic ingredients."></textarea>
+                </div>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" class="close-modal flex-1 bg-slate-800 text-slate-300 font-semibold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all">Save Menu Dish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: RESTAURANT CART -->
+    <div id="modalCart" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-cart-shopping text-rose-400"></i> Active Order Cart
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Target Table or Room</label>
+                    <select id="cartTargetInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none">
+                        <option value="Table 1 (Garden)">Table 1 (Garden)</option>
+                        <option value="Table 2 (Main Hall)">Table 2 (Main Hall)</option>
+                        <option value="Table 3 (VIP Room)">Table 3 (VIP Room)</option>
+                        <option value="Room 101 Service">Room 101 Service</option>
+                        <option value="Room 102 Service">Room 102 Service</option>
+                    </select>
+                </div>
+                <div class="border border-slate-800 rounded-xl p-3 bg-slate-950/60 max-h-48 overflow-y-auto space-y-2" id="cartList">
+                    <!-- Dynamic cart list -->
+                </div>
+                <div class="flex items-center justify-between border-t border-slate-800 pt-3">
+                    <span class="text-xs font-semibold text-slate-400">Order Total Amount:</span>
+                    <span class="text-lg font-bold text-amber-400" id="cartTotalSumText">0 ETB</span>
+                </div>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" id="btnClearCart" class="bg-rose-500/20 text-rose-300 font-semibold px-4 py-2.5 rounded-xl text-xs hover:bg-rose-500/30">Clear</button>
+                    <button type="button" id="btnPlaceOrder" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all">Submit Order to Kitchen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: STAFF CREATE / EDIT -->
+    <div id="modalStaff" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2" id="modalStaffTitle">
+                    <i class="fa-solid fa-user-gear text-yellow-400"></i> Employee Profile
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="formStaff" class="p-5 space-y-4">
+                <input type="hidden" id="staffEditId">
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Full Name</label>
+                    <input type="text" id="staffNameInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="Chaltu Gemechu" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Username</label>
+                    <input type="text" id="staffUserInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="chaltu_reception" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">System Privilege Role</label>
+                    <select id="staffRoleInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none">
+                        <option value="Admin">Admin</option>
+                        <option value="Receptionist">Receptionist</option>
+                        <option value="Kitchen Staff">Kitchen Staff</option>
+                    </select>
+                </div>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" class="close-modal flex-1 bg-slate-800 text-slate-300 font-semibold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all">Save Staff Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 7: BANNER CREATE / EDIT -->
+    <div id="modalBanner" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2" id="modalBannerTitle">
+                    <i class="fa-solid fa-bullhorn text-purple-400"></i> Banner Promo
+                </h3>
+                <button class="close-modal text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="formBanner" class="p-5 space-y-4">
+                <input type="hidden" id="bannerEditId">
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Banner Title</label>
+                    <input type="text" id="bannerTitleInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="Jimma Palace Tour" required>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Description Text</label>
+                    <textarea id="bannerDescInput" rows="2" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="Guided shuttle tour from Asni Guest House."></textarea>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Offer Tag / Price</label>
+                    <input type="text" id="bannerTagInput" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 outline-none" placeholder="850 ETB / person" required>
+                </div>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" class="close-modal flex-1 bg-slate-800 text-slate-300 font-semibold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all">Save Banner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 8: PRINTABLE RECEIPT MODAL -->
+    <div id="modalReceipt" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white text-slate-900 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 space-y-4">
+            <div class="text-center space-y-1 border-b border-slate-200 pb-4">
+                <h2 class="text-2xl font-black tracking-tight text-amber-700">ASNI GUEST HOUSE</h2>
+                <p class="text-xs text-slate-500">Jimma Ferenj Arada, Ethiopia | Tel: +251 47 111 2233</p>
+                <div class="inline-block bg-slate-100 text-slate-700 text-xs px-2.5 py-0.5 rounded font-mono mt-1">
+                    Receipt #<span id="rcptId">000000</span>
+                </div>
+            </div>
+
+            <div class="text-xs space-y-1">
+                <div class="flex justify-between"><span class="text-slate-500">Date:</span> <span id="rcptDate" class="font-semibold"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Payer / Guest:</span> <span id="rcptPayer" class="font-semibold"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Payment Type:</span> <span id="rcptType" class="font-semibold"></span></div>
+            </div>
+
+            <div class="border-t border-b border-slate-200 py-3 space-y-2">
+                <div class="text-[10px] font-bold text-slate-400 uppercase">Itemized Details</div>
+                <div class="text-xs font-semibold text-slate-800" id="rcptDesc">Room Charge</div>
+            </div>
+
+            <div class="flex justify-between items-center text-base font-bold border-b border-slate-200 pb-3">
+                <span>Total Amount Paid:</span>
+                <span id="rcptAmount" class="text-emerald-700">0 ETB</span>
+            </div>
+
+            <div class="text-center text-[10px] text-slate-400 italic">
+                Thank you for staying at Asni Guest House! Ameseginalehu!
+            </div>
+
+            <div class="no-print pt-2 flex gap-3">
+                <button onclick="document.getElementById('modalReceipt').classList.add('hidden')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 rounded-xl text-xs">Close</button>
+                <button onclick="window.print()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-xl text-xs">Print Receipt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT IIFE MODULE -->
+    <script>
+    const AsniApp = (function() {
+
+        // ==========================================
+        // 1. EMBEDDED SQLITE / D1 DATABASE ENGINE
+        // ==========================================
+        const DB_STORAGE_KEY = 'asni_guesthouse_d1_v2';
+        let workerUrl = localStorage.getItem('asni_worker_url') || '';
+
+        const InitialSeed = {
+            rooms: [
+                { id: 101, room_number: '101', type: 'Standard', floor: 1, rate_etb: 1800, status: 'Occupied' },
+                { id: 102, room_number: '102', type: 'Deluxe', floor: 1, rate_etb: 2500, status: 'Occupied' },
+                { id: 103, room_number: '103', type: 'Standard', floor: 1, rate_etb: 1800, status: 'Available' },
+                { id: 104, room_number: '104', type: 'Family Suite', floor: 1, rate_etb: 3800, status: 'Available' },
+                { id: 201, room_number: '201', type: 'Executive Suite', floor: 2, rate_etb: 4500, status: 'Cleaning' },
+                { id: 202, room_number: '202', type: 'Deluxe', floor: 2, rate_etb: 2500, status: 'Available' }
+            ],
+            guests: [
+                { id: 1, name: 'Kifle Tadesse', phone: '+251 91 112 2334', national_id: 'ETH-9011', city: 'Addis Ababa' },
+                { id: 2, name: 'Tigist Alemu', phone: '+251 92 445 5667', national_id: 'ETH-4412', city: 'Hawassa' },
+                { id: 3, name: 'Mohammed Hassan', phone: '+251 93 778 8990', national_id: 'ETH-7731', city: 'Jimma' }
+            ],
+            bookings: [
+                { id: 1001, guest_id: 1, guest_name: 'Kifle Tadesse', room_id: 101, checkin: '2026-09-28', checkout: '2026-10-02', total_etb: 7200, status: 'Checked-In' },
+                { id: 1002, guest_id: 2, guest_name: 'Tigist Alemu', room_id: 102, checkin: '2026-09-29', checkout: '2026-10-01', total_etb: 5000, status: 'Checked-In' }
+            ],
+            menu: [
+                { id: 1, name: 'Special Kitfo', category: 'Ethiopian', price_etb: 450, desc: 'Fresh minced beef with mitmita and niter kibbeh.' },
+                { id: 2, name: 'Doro Wat with Enjera', category: 'Ethiopian', price_etb: 500, desc: 'Traditional chicken stew with boiled egg.' },
+                { id: 3, name: 'Shiro Tegabino', category: 'Ethiopian', price_etb: 220, desc: 'Rich chickpea powder stew served piping hot.' },
+                { id: 4, name: 'Jimma Buna Coffee', category: 'Beverage', price_etb: 50, desc: 'Freshly roasted authentic Jimma specialty coffee.' },
+                { id: 5, name: 'Fresh Spris Juice', category: 'Beverage', price_etb: 120, desc: 'Layered mango, avocado, and papaya juice.' }
+            ],
+            orders: [
+                { id: 501, location: 'Table 1 (Garden)', items: 'Special Kitfo x2, Jimma Buna x2', total_etb: 1000, status: 'Served' },
+                { id: 502, location: 'Room 101 Service', items: 'Shiro Tegabino x1, Spris Juice x1', total_etb: 340, status: 'Preparing' }
+            ],
+            staff: [
+                { id: 1, name: 'Abebe Demissie', username: 'abebe_admin', role: 'Admin' },
+                { id: 2, name: 'Chaltu Gemechu', username: 'chaltu_recept', role: 'Receptionist' }
+            ],
+            ledger: [
+                { id: 8001, date: '2026-09-28', type: 'Room Charge', desc: '4 Nights Stay Room 101', payer: 'Kifle Tadesse', amount_etb: 7200 },
+                { id: 8002, date: '2026-09-29', type: 'Room Charge', desc: '2 Nights Stay Room 102', payer: 'Tigist Alemu', amount_etb: 5000 },
+                { id: 8003, date: '2026-09-30', type: 'Restaurant POS', desc: 'Order #501 (Table 1)', payer: 'Walk-in Guest', amount_etb: 1000 }
+            ],
+            banners: [
+                { id: 1, title: 'Jimma Aba Jifar Palace Tour', desc: 'Explore historical royal architecture with private shuttle service.', tag: '850 ETB / person' },
+                { id: 2, title: 'Authentic Garden Coffee Ceremony', desc: 'Complimentary for Executive & Suite guests in our serene garden terrace.', tag: 'VIP Complimentary' }
+            ]
+        };
+
+        let db = null;
+        let currentRole = 'Admin';
+        let activeCart = [];
+        let revenueChartInst = null;
+        let categoryChartInst = null;
+
+        function initDatabase() {
+            try {
+                const data = localStorage.getItem(DB_STORAGE_KEY);
+                if (data) {
+                    db = JSON.parse(data);
+                } else {
+                    db = JSON.parse(JSON.stringify(InitialSeed));
+                    saveDatabase();
+                }
+            } catch (e) {
+                console.error('Error loading localStorage:', e);
+                db = JSON.parse(JSON.stringify(InitialSeed));
+            }
+        }
+
+        function saveDatabase() {
+            try {
+                localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db));
+            } catch (e) {
+                console.error('Error saving to localStorage:', e);
+            }
+        }
+
+        // ==========================================
+        // 2. HELPER TOAST NOTIFICATIONS
+        // ==========================================
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if(!container) return;
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl text-xs font-semibold shadow-2xl border flex items-center gap-2 transform transition-all duration-300 translate-y-2 ${
+                type === 'success' 
+                    ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200' 
+                    : 'bg-rose-950/90 border-rose-500/50 text-rose-200'
+            }`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check text-emerald-400' : 'fa-triangle-exclamation text-rose-400'}"></i> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ==========================================
+        // 3. ROLE-BASED PRIVILEGES PERMISSIONS
+        // ==========================================
+        function setRole(role) {
+            currentRole = role;
+            const adminElements = document.querySelectorAll('.admin-only');
+            const editBtns = document.querySelectorAll('.can-edit');
+
+            adminElements.forEach(el => {
+                el.style.display = (role === 'Guest') ? 'none' : 'flex';
+            });
+
+            editBtns.forEach(btn => {
+                if (role === 'Guest') {
+                    btn.classList.add('opacity-50', 'pointer-events-none');
+                } else {
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
+                }
+            });
+
+            showToast(`Active privilege set to: ${role}`);
+        }
+
+        // ==========================================
+        // 4. MODULE RENDERERS
+        // ==========================================
+        function renderDashboard() {
+            // Metrics
+            const occupiedRooms = db.rooms.filter(r => r.status === 'Occupied').length;
+            const totalRooms = db.rooms.length;
+            const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+            const totalRev = db.ledger.reduce((sum, item) => sum + item.amount_etb, 0);
+
+            document.getElementById('kpiTotalRev').textContent = `${totalRev.toLocaleString()} ETB`;
+            document.getElementById('kpiOccupancy').textContent = `${occupancyRate}%`;
+            document.getElementById('kpiOccupancySub').textContent = `${occupiedRooms} / ${totalRooms} Rooms Occupied`;
+            document.getElementById('kpiGuests').textContent = db.guests.length.toString();
+            document.getElementById('kpiMenuItems').textContent = db.menu.length.toString();
+
+            // Render Banner promo slider
+            const bannerBox = document.getElementById('dashboardBannerContainer');
+            if (db.banners.length > 0) {
+                const b = db.banners[0];
+                bannerBox.innerHTML = `
+                    <div class="relative z-10 space-y-2">
+                        <span class="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-bold rounded-md border border-amber-500/30 uppercase tracking-wider">${b.tag}</span>
+                        <h2 class="text-xl md:text-2xl font-extrabold text-white">${b.title}</h2>
+                        <p class="text-slate-300 text-xs max-w-xl">${b.desc}</p>
+                    </div>
+                `;
+            }
+
+            renderCharts(occupancyRate);
+        }
+
+        function renderCharts() {
+            const ctx1 = document.getElementById('revenueChart');
+            if (ctx1 && window.Chart) {
+                if(revenueChartInst) revenueChartInst.destroy();
+                revenueChartInst = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Revenue (ETB)',
+                            data: [5000, 7200, 8900, 6400, 12000, 14500, 16200],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', fontSize: 10 } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', fontSize: 10 } }
+                        }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('categoryChart');
+            if (ctx2 && window.Chart) {
+                if(categoryChartInst) categoryChartInst.destroy();
+                categoryChartInst = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Standard', 'Deluxe', 'Family', 'Executive'],
+                        datasets: [{
+                            data: [
+                                db.rooms.filter(r => r.type === 'Standard').length,
+                                db.rooms.filter(r => r.type === 'Deluxe').length,
+                                db.rooms.filter(r => r.type === 'Family Suite').length,
+                                db.rooms.filter(r => r.type === 'Executive Suite').length
+                            ],
+                            backgroundColor: ['#F59E0B', '#10B981', '#3B82F6', '#8B5CF6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#94A3B8', boxWidth: 10 } } }
+                    }
+                });
+            }
+        }
+
+        function renderRooms() {
+            const table = document.getElementById('roomsCrudTable');
+            table.innerHTML = '';
+
+            db.rooms.forEach(r => {
+                const tr = document.createElement('tr');
+                const isOccupied = r.status === 'Occupied';
+                const statusBg = isOccupied ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 
+                                 r.status === 'Cleaning' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 
+                                 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-bold text-white">Room ${r.room_number}</td>
+                    <td class="px-4 py-3">${r.type}</td>
+                    <td class="px-4 py-3">Floor ${r.floor}</td>
+                    <td class="px-4 py-3 font-bold text-amber-400">${r.rate_etb} ETB</td>
+                    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${statusBg}">${r.status}</span></td>
+                    <td class="px-4 py-3 text-right space-x-2">
+                        <button onclick="AsniApp.openRoomModal(${r.id})" class="can-edit text-xs bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="AsniApp.deleteRoom(${r.id})" class="can-edit text-xs bg-slate-800 hover:bg-slate-700 text-rose-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </td>
+                `;
+                table.appendChild(tr);
+            });
+        }
+
+        function renderGuests() {
+            const table = document.getElementById('guestsCrudTable');
+            table.innerHTML = '';
+
+            db.guests.forEach(g => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-semibold text-white">${g.name}</td>
+                    <td class="px-4 py-3 font-mono text-slate-400">${g.phone}</td>
+                    <td class="px-4 py-3 font-mono text-slate-400">${g.national_id}</td>
+                    <td class="px-4 py-3 text-slate-300">${g.city}</td>
+                    <td class="px-4 py-3 text-right space-x-2">
+                        <button onclick="AsniApp.openGuestModal(${g.id})" class="can-edit text-xs bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="AsniApp.deleteGuest(${g.id})" class="can-edit text-xs bg-slate-800 hover:bg-slate-700 text-rose-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </td>
+                `;
+                table.appendChild(tr);
+            });
+        }
+
+        function renderBookings() {
+            // Matrix Grid
+            const matrixGrid = document.getElementById('roomMatrixGrid');
+            matrixGrid.innerHTML = '';
+            db.rooms.forEach(r => {
+                const bg = r.status === 'Occupied' ? 'bg-rose-950/40 border-rose-500/40 text-rose-300' :
+                           r.status === 'Cleaning' ? 'bg-amber-950/40 border-amber-500/40 text-amber-300' :
+                           'bg-emerald-950/40 border-emerald-500/40 text-emerald-300';
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border flex flex-col items-center justify-center gap-1 ${bg}`;
+                div.innerHTML = `
+                    <span class="font-bold text-sm">#${r.room_number}</span>
+                    <span class="text-[9px] uppercase font-bold tracking-wider">${r.status}</span>
+                `;
+                matrixGrid.appendChild(div);
+            });
+
+            // Table
+            const table = document.getElementById('bookingsCrudTable');
+            table.innerHTML = '';
+
+            db.bookings.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-mono text-slate-400 text-xs">#${b.id}</td>
+                    <td class="px-4 py-3 font-semibold text-white">${b.guest_name}</td>
+                    <td class="px-4 py-3">Room ${b.room_id}</td>
+                    <td class="px-4 py-3 text-slate-400">${b.checkin}</td>
+                    <td class="px-4 py-3 text-slate-400">${b.checkout}</td>
+                    <td class="px-4 py-3 font-bold text-amber-400">${b.total_etb.toLocaleString()} ETB</td>
+                    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${b.status}</span></td>
+                    <td class="px-4 py-3 text-right space-x-2">
+                        <button onclick="AsniApp.openBookingModal(${b.id})" class="can-edit text-xs bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="AsniApp.deleteBooking(${b.id})" class="can-edit text-xs bg-slate-800 hover:bg-slate-700 text-rose-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </td>
+                `;
+                table.appendChild(tr);
+            });
+        }
+
+        function renderDining() {
+            // Table Map
+            const tablesMap = document.getElementById('diningTablesMap');
+            tablesMap.innerHTML = '';
+            ['Table 1 (Garden)', 'Table 2 (Main Hall)', 'Table 3 (VIP Room)', 'Table 4 (Rooftop)'].forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = 'glass-card p-3 rounded-xl text-center hover:border-rose-500/50 transition-all text-xs font-semibold text-slate-200 flex items-center justify-center gap-2';
+                btn.innerHTML = `<i class="fa-solid fa-chair text-rose-400"></i> ${t}`;
+                btn.onclick = () => showToast(`Selected ${t} for dining.`);
+                tablesMap.appendChild(btn);
+            });
+
+            // Menu Grid
+            const menuGrid = document.getElementById('menuCatalogGrid');
+            menuGrid.innerHTML = '';
+            db.menu.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'glass-panel p-3.5 rounded-2xl flex justify-between gap-2 items-center';
+                card.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${item.category}</span>
+                            <h4 class="font-bold text-slate-100 text-xs">${item.name}</h4>
+                        </div>
+                        <p class="text-[11px] text-slate-400 line-clamp-1">${item.desc}</p>
+                        <div class="text-amber-400 font-bold text-xs">${item.price_etb} ETB</div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="AsniApp.addToCart(${item.id})" class="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-xs flex items-center justify-center">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button onclick="AsniApp.openMenuModal(${item.id})" class="can-edit w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold text-xs flex items-center justify-center">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="AsniApp.deleteMenuItem(${item.id})" class="can-edit w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 font-bold text-xs flex items-center justify-center">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                menuGrid.appendChild(card);
+            });
+
+            // Kitchen Orders Table
+            const ordersTable = document.getElementById('ordersCrudTable');
+            ordersTable.innerHTML = '';
+            db.orders.forEach(o => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-mono text-slate-400 text-xs">#${o.id}</td>
+                    <td class="px-4 py-3 font-semibold text-slate-200">${o.location}</td>
+                    <td class="px-4 py-3 text-slate-300 text-xs">${o.items}</td>
+                    <td class="px-4 py-3 font-bold text-amber-400">${o.total_etb} ETB</td>
+                    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">${o.status}</span></td>
+                    <td class="px-4 py-3 text-right space-x-2">
+                        <button onclick="AsniApp.deleteOrder(${o.id})" class="can-edit text-xs bg-slate-800 hover:bg-slate-700 text-rose-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </td>
+                `;
+                ordersTable.appendChild(tr);
+            });
+        }
+
+        function renderStaff() {
+            const table = document.getElementById('staffCrudTable');
+            table.innerHTML = '';
+
+            db.staff.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-bold text-white">${s.name}</td>
+                    <td class="px-4 py-3 font-mono text-slate-400">${s.username}</td>
+                    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">${s.role}</span></td>
+                    <td class="px-4 py-3 text-right space-x-2">
+                        <button onclick="AsniApp.openStaffModal(${s.id})" class="text-xs bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="AsniApp.deleteStaff(${s.id})" class="text-xs bg-slate-800 hover:bg-slate-700 text-rose-400 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </td>
+                `;
+                table.appendChild(tr);
+            });
+        }
+
+        function renderLedger() {
+            const tbody = document.getElementById('ledgerTableBody');
+            tbody.innerHTML = '';
+
+            db.ledger.forEach(l => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-mono text-slate-400 text-xs">#${l.id}</td>
+                    <td class="px-4 py-3 text-slate-400 text-xs">${l.date}</td>
+                    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${l.type}</span></td>
+                    <td class="px-4 py-3 text-slate-200 text-xs">${l.desc}</td>
+                    <td class="px-4 py-3 text-slate-300 text-xs">${l.payer}</td>
+                    <td class="px-4 py-3 font-bold text-emerald-400">${l.amount_etb.toLocaleString()} ETB</td>
+                    <td class="px-4 py-3 text-right">
+                        <button onclick="AsniApp.printReceipt('${l.payer}', '${l.desc}', ${l.amount_etb})" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-print"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderBanners() {
+            const grid = document.getElementById('bannersCrudGrid');
+            grid.innerHTML = '';
+
+            db.banners.forEach(b => {
+                const card = document.createElement('div');
+                card.className = 'glass-panel p-5 rounded-2xl space-y-3 border border-purple-500/20 flex flex-col justify-between';
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase">${b.tag}</span>
+                            <div class="space-x-1">
+                                <button onclick="AsniApp.openBannerModal(${b.id})" class="can-edit text-xs text-sky-400 p-1"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="AsniApp.deleteBanner(${b.id})" class="can-edit text-xs text-rose-400 p-1"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <h4 class="font-bold text-white text-base">${b.title}</h4>
+                        <p class="text-xs text-slate-300">${b.desc}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderSchema() {
+            const tree = document.getElementById('schemaTree');
+            tree.innerHTML = `
+                <div class="space-y-1">
+                    <div class="font-bold text-teal-400"><i class="fa-solid fa-database"></i> asni_d1_database</div>
+                    <div class="pl-3 space-y-0.5 text-slate-400">
+                        <div>tbl_rooms (${db.rooms.length} rows)</div>
+                        <div>tbl_guests (${db.guests.length} rows)</div>
+                        <div>tbl_bookings (${db.bookings.length} rows)</div>
+                        <div>tbl_menu (${db.menu.length} rows)</div>
+                        <div>tbl_orders (${db.orders.length} rows)</div>
+                        <div>tbl_staff (${db.staff.length} rows)</div>
+                        <div>tbl_ledger (${db.ledger.length} rows)</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 5. CRUD ACTION CONTROLLERS
+        // ==========================================
+        // --- ROOMS CRUD ---
+        function openRoomModal(id = null) {
+            document.getElementById('formRoom').reset();
+            document.getElementById('roomEditId').value = id || '';
+            document.getElementById('modalRoomTitle').innerHTML = id ? `<i class="fa-solid fa-pen text-amber-400"></i> Edit Room` : `<i class="fa-solid fa-plus text-amber-400"></i> New Room`;
+
+            if (id) {
+                const r = db.rooms.find(x => x.id === id);
+                if (r) {
+                    document.getElementById('roomNumInput').value = r.room_number;
+                    document.getElementById('roomTypeInput').value = r.type;
+                    document.getElementById('roomFloorInput').value = r.floor;
+                    document.getElementById('roomRateInput').value = r.rate_etb;
+                    document.getElementById('roomStatusInput').value = r.status;
+                }
+            }
+            document.getElementById('modalRoom').classList.remove('hidden');
+        }
+
+        function handleRoomSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('roomEditId').value;
+            const num = document.getElementById('roomNumInput').value;
+            const type = document.getElementById('roomTypeInput').value;
+            const floor = parseInt(document.getElementById('roomFloorInput').value);
+            const rate = parseInt(document.getElementById('roomRateInput').value);
+            const status = document.getElementById('roomStatusInput').value;
+
+            if (editId) {
+                const r = db.rooms.find(x => x.id === parseInt(editId));
+                if (r) { r.room_number = num; r.type = type; r.floor = floor; r.rate_etb = rate; r.status = status; }
+                showToast(`Updated Room ${num}`);
+            } else {
+                db.rooms.push({ id: Date.now(), room_number: num, type: type, floor: floor, rate_etb: rate, status: status });
+                showToast(`Added Room ${num}`);
+            }
+            saveDatabase();
+            document.getElementById('modalRoom').classList.add('hidden');
+            renderDashboard(); renderRooms(); renderBookings(); renderSchema();
+        }
+
+        function deleteRoom(id) {
+            db.rooms = db.rooms.filter(x => x.id !== id);
+            saveDatabase();
+            showToast('Room deleted record.');
+            renderDashboard(); renderRooms(); renderBookings(); renderSchema();
+        }
+
+        // --- GUESTS CRUD ---
+        function openGuestModal(id = null) {
+            document.getElementById('formGuest').reset();
+            document.getElementById('guestEditId').value = id || '';
+            document.getElementById('modalGuestTitle').innerHTML = id ? `<i class="fa-solid fa-pen text-sky-400"></i> Edit Guest` : `<i class="fa-solid fa-user-plus text-sky-400"></i> New Guest`;
+
+            if (id) {
+                const g = db.guests.find(x => x.id === id);
+                if (g) {
+                    document.getElementById('guestNameInput').value = g.name;
+                    document.getElementById('guestPhoneInput').value = g.phone;
+                    document.getElementById('guestIdInput').value = g.national_id;
+                    document.getElementById('guestCityInput').value = g.city;
+                }
+            }
+            document.getElementById('modalGuest').classList.remove('hidden');
+        }
+
+        function handleGuestSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('guestEditId').value;
+            const name = document.getElementById('guestNameInput').value;
+            const phone = document.getElementById('guestPhoneInput').value;
+            const nid = document.getElementById('guestIdInput').value;
+            const city = document.getElementById('guestCityInput').value;
+
+            if (editId) {
+                const g = db.guests.find(x => x.id === parseInt(editId));
+                if (g) { g.name = name; g.phone = phone; g.national_id = nid; g.city = city; }
+                showToast(`Updated Guest profile ${name}`);
+            } else {
+                db.guests.push({ id: Date.now(), name: name, phone: phone, national_id: nid, city: city });
+                showToast(`Registered new guest ${name}`);
+            }
+            saveDatabase();
+            document.getElementById('modalGuest').classList.add('hidden');
+            renderDashboard(); renderGuests(); renderSchema();
+        }
+
+        function deleteGuest(id) {
+            db.guests = db.guests.filter(x => x.id !== id);
+            saveDatabase();
+            showToast('Guest profile removed.');
+            renderDashboard(); renderGuests(); renderSchema();
+        }
+
+        // --- BOOKINGS CRUD ---
+        function openBookingModal(id = null) {
+            document.getElementById('formBooking').reset();
+            document.getElementById('bookingEditId').value = id || '';
+
+            // Populate Guests Select
+            const gSelect = document.getElementById('bookingGuestSelect');
+            gSelect.innerHTML = '';
+            db.guests.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = `${g.name} (${g.phone})`;
+                gSelect.appendChild(opt);
+            });
+
+            // Populate Rooms Select
+            const rSelect = document.getElementById('bookingRoomSelect');
+            rSelect.innerHTML = '';
+            db.rooms.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.room_number;
+                opt.textContent = `Room ${r.room_number} - ${r.type} (${r.rate_etb} ETB/night)`;
+                rSelect.appendChild(opt);
+            });
+
+            if (id) {
+                const b = db.bookings.find(x => x.id === id);
+                if (b) {
+                    gSelect.value = b.guest_id;
+                    rSelect.value = b.room_id;
+                    document.getElementById('bookingCheckinInput').value = b.checkin;
+                    document.getElementById('bookingCheckoutInput').value = b.checkout;
+                    document.getElementById('bookingStatusInput').value = b.status;
+                }
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('bookingCheckinInput').value = today;
+                document.getElementById('bookingCheckoutInput').value = today;
+            }
+
+            document.getElementById('modalBooking').classList.remove('hidden');
+        }
+
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('bookingEditId').value;
+            const guestId = parseInt(document.getElementById('bookingGuestSelect').value);
+            const guestObj = db.guests.find(g => g.id === guestId);
+            const roomId = document.getElementById('bookingRoomSelect').value;
+            const roomObj = db.rooms.find(r => r.room_number === roomId);
+            const checkin = document.getElementById('bookingCheckinInput').value;
+            const checkout = document.getElementById('bookingCheckoutInput').value;
+            const status = document.getElementById('bookingStatusInput').value;
+
+            const total = roomObj ? roomObj.rate_etb * 2 : 3600; // default 2 nights est
+
+            if (editId) {
+                const b = db.bookings.find(x => x.id === parseInt(editId));
+                if (b) {
+                    b.guest_id = guestId;
+                    b.guest_name = guestObj ? guestObj.name : 'Guest';
+                    b.room_id = roomId;
+                    b.checkin = checkin;
+                    b.checkout = checkout;
+                    b.status = status;
+                }
+                showToast(`Updated reservation.`);
+            } else {
+                db.bookings.push({
+                    id: Math.floor(1000 + Math.random() * 9000),
+                    guest_id: guestId,
+                    guest_name: guestObj ? guestObj.name : 'Guest',
+                    room_id: roomId,
+                    checkin: checkin,
+                    checkout: checkout,
+                    total_etb: total,
+                    status: status
+                });
+
+                // Set room occupied if checked-in
+                if (roomObj && status === 'Checked-In') {
+                    roomObj.status = 'Occupied';
+                }
+
+                // Add to ledger
+                db.ledger.unshift({
+                    id: Math.floor(1000 + Math.random() * 9000),
+                    date: checkin,
+                    type: 'Room Charge',
+                    desc: `Stay Reservation Room ${roomId}`,
+                    payer: guestObj ? guestObj.name : 'Guest',
+                    amount_etb: total
+                });
+
+                showToast(`Created booking for Room ${roomId}!`);
+            }
+
+            saveDatabase();
+            document.getElementById('modalBooking').classList.add('hidden');
+            renderDashboard(); renderRooms(); renderBookings(); renderLedger(); renderSchema();
+        }
+
+        function deleteBooking(id) {
+            db.bookings = db.bookings.filter(x => x.id !== id);
+            saveDatabase();
+            showToast('Reservation deleted.');
+            renderDashboard(); renderBookings(); renderSchema();
+        }
+
+        // --- MENU CRUD ---
+        function openMenuModal(id = null) {
+            document.getElementById('formMenu').reset();
+            document.getElementById('menuEditId').value = id || '';
+
+            if (id) {
+                const m = db.menu.find(x => x.id === id);
+                if (m) {
+                    document.getElementById('menuNameInput').value = m.name;
+                    document.getElementById('menuCategoryInput').value = m.category;
+                    document.getElementById('menuPriceInput').value = m.price_etb;
+                    document.getElementById('menuDescInput').value = m.desc;
+                }
+            }
+            document.getElementById('modalMenu').classList.remove('hidden');
+        }
+
+        function handleMenuSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('menuEditId').value;
+            const name = document.getElementById('menuNameInput').value;
+            const category = document.getElementById('menuCategoryInput').value;
+            const price = parseInt(document.getElementById('menuPriceInput').value);
+            const desc = document.getElementById('menuDescInput').value;
+
+            if (editId) {
+                const m = db.menu.find(x => x.id === parseInt(editId));
+                if (m) { m.name = name; m.category = category; m.price_etb = price; m.desc = desc; }
+                showToast(`Updated menu dish ${name}`);
+            } else {
+                db.menu.push({ id: Date.now(), name: name, category: category, price_etb: price, desc: desc });
+                showToast(`Added ${name} to cuisine menu`);
+            }
+            saveDatabase();
+            document.getElementById('modalMenu').classList.add('hidden');
+            renderDashboard(); renderDining(); renderSchema();
+        }
+
+        function deleteMenuItem(id) {
+            db.menu = db.menu.filter(x => x.id !== id);
+            saveDatabase();
+            showToast('Removed item from menu.');
+            renderDashboard(); renderDining(); renderSchema();
+        }
+
+        // --- RESTAURANT ORDERS CRUD ---
+        function addToCart(itemId) {
+            const item = db.menu.find(m => m.id === itemId);
+            if (!item) return;
+            activeCart.push(item);
+            document.getElementById('cartCountBadge').textContent = activeCart.length.toString();
+            showToast(`Added ${item.name} to cart.`);
+        }
+
+        function openCartModal() {
+            const list = document.getElementById('cartList');
+            list.innerHTML = '';
+
+            if (activeCart.length === 0) {
+                list.innerHTML = `<div class="text-center text-slate-500 text-xs py-4">Cart is currently empty.</div>`;
+                document.getElementById('cartTotalSumText').textContent = '0 ETB';
+            } else {
+                let total = 0;
+                activeCart.forEach((item, index) => {
+                    total += item.price_etb;
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between text-xs py-1 border-b border-slate-800/50';
+                    div.innerHTML = `
+                        <span class="text-slate-200 font-medium">${item.name}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-amber-400 font-bold">${item.price_etb} ETB</span>
+                            <button onclick="AsniApp.removeFromCart(${index})" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+                document.getElementById('cartTotalSumText').textContent = `${total} ETB`;
+            }
+            document.getElementById('modalCart').classList.remove('hidden');
+        }
+
+        function removeFromCart(index) {
+            activeCart.splice(index, 1);
+            document.getElementById('cartCountBadge').textContent = activeCart.length.toString();
+            openCartModal();
+        }
+
+        function placeOrder() {
+            if (activeCart.length === 0) { showToast('Cart is empty!', 'error'); return; }
+
+            const target = document.getElementById('cartTargetInput').value;
+            const total = activeCart.reduce((sum, i) => sum + i.price_etb, 0);
+            const itemsSummary = activeCart.map(i => i.name).join(', ');
+
+            db.orders.push({
+                id: Math.floor(500 + Math.random() * 500),
+                location: target,
+                items: itemsSummary,
+                total_etb: total,
+                status: 'Preparing'
+            });
+
+            db.ledger.unshift({
+                id: Math.floor(1000 + Math.random() * 9000),
+                date: new Date().toISOString().split('T')[0],
+                type: 'Restaurant POS',
+                desc: `Kitchen Order (${target})`,
+                payer: 'Guest / Walk-In',
+                amount_etb: total
+            });
+
+            activeCart = [];
+            document.getElementById('cartCountBadge').textContent = '0';
+            saveDatabase();
+            document.getElementById('modalCart').classList.add('hidden');
+            showToast(`Submitted kitchen order for ${target}!`);
+            renderDashboard(); renderDining(); renderLedger(); renderSchema();
+        }
+
+        function deleteOrder(id) {
+            db.orders = db.orders.filter(x => x.id !== id);
+            saveDatabase();
+            showToast('Order removed.');
+            renderDining(); renderSchema();
+        }
+
+        // --- STAFF CRUD ---
+        function openStaffModal(id = null) {
+            document.getElementById('formStaff').reset();
+            document.getElementById('staffEditId').value = id || '';
+
+            if (id) {
+                const s = db.staff.find(x => x.id === id);
+                if (s) {
+                    document.getElementById('staffNameInput').value = s.name;
+                    document.getElementById('staffUserInput').value = s.username;
+                    document.getElementById('staffRoleInput').value = s.role;
+                }
+            }
+            document.getElementById('modalStaff').classList.remove('hidden');
+        }
+
+        function handleStaffSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('staffEditId').value;
+            const name = document.getElementById('staffNameInput').value;
+            const user = document.getElementById('staffUserInput').value;
+            const role = document.getElementById('staffRoleInput').value;
+
+            if (editId) {
+                const s = db.staff.find(x => x.id === parseInt(editId));
+                if (s) { s.name = name; s.username = user; s.role = role; }
+                showToast(`Updated staff account ${name}`);
+            } else {
+                db.staff.push({ id: Date.now(), name: name, username: user, role: role });
+                showToast(`Added staff member ${name}`);
+            }
+            saveDatabase();
+            document.getElementById('modalStaff').classList.add('hidden');
+            renderStaff(); renderSchema();
+        }
+
+        function deleteStaff(id) {
+            db.staff = db.staff.filter(x => x.id !== id);
+            saveDatabase();
+            showToast('Employee account removed.');
+            renderStaff(); renderSchema();
+        }
+
+        // --- BANNERS CRUD ---
+        function openBannerModal(id = null) {
+            document.getElementById('formBanner').reset();
+            document.getElementById('bannerEditId').value = id || '';
+
+            if (id) {
+                const b = db.banners.find(x => x.id === id);
+                if (b) {
+                    document.getElementById('bannerTitleInput').value = b.title;
+                    document.getElementById('bannerDescInput').value = b.desc;
+                    document.getElementById('bannerTagInput').value = b.tag;
+                }
+            }
+            document.getElementById('modalBanner').classList.remove('hidden');
+        }
+
+        function handleBannerSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('bannerEditId').value;
+            const title = document.getElementById('bannerTitleInput').value;
+            const desc = document.getElementById('bannerDescInput').value;
+            const tag = document.getElementById('bannerTagInput').value;
+
+            if (editId) {
+                const b = db.banners.find(x => x.id === parseInt(editId));
+                if (b) { b.title = title; b.desc = desc; b.tag = tag; }
+                showToast(`Updated banner promo.`);
+            } else {
+                db.banners.push({ id: Date.now(), title: title, desc: desc, tag: tag });
+                showToast(`Created new ad banner promo.`);
+            }
+            saveDatabase();
+            document.getElementById('modalBanner').classList.add('hidden');
+            renderDashboard(); renderBanners();
+        }
+
+        function deleteBanner(id) {
+            db.banners = db.banners.filter(x => x.id !== id);
+            saveDatabase();
+            showToast('Banner removed.');
+            renderDashboard(); renderBanners();
+        }
+
+        // --- PRINT RECEIPT & EXPORT CSV ---
+        function printReceipt(payer, desc, amount) {
+            document.getElementById('rcptId').textContent = Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('rcptDate').textContent = new Date().toLocaleDateString();
+            document.getElementById('rcptPayer').textContent = payer;
+            document.getElementById('rcptType').textContent = 'Completed';
+            document.getElementById('rcptDesc').textContent = desc;
+            document.getElementById('rcptAmount').textContent = `${amount.toLocaleString()} ETB`;
+
+            document.getElementById('modalReceipt').classList.remove('hidden');
+        }
+
+        function exportCSV() {
+            let csv = "ID,Date,Type,Description,Payer,Amount_ETB\n";
+            db.ledger.forEach(r => {
+                csv += `${r.id},${r.date},${r.type},"${r.desc}",${r.payer},${r.amount_etb}\n`;
+            });
+            const link = document.createElement("a");
+            link.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
+            link.download = `Asni_Ledger_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            showToast('Exported transaction ledger CSV statement.');
+        }
+
+        // --- SQL DIRECT EXECUTION ---
+        function runDirectSQL() {
+            const query = document.getElementById('sqlQueryInput').value.trim();
+            const start = performance.now();
+            const output = document.getElementById('sqlOutputBox');
+
+            try {
+                if(query.toLowerCase().startsWith('select')) {
+                    output.innerHTML = `<pre class="text-teal-400">${JSON.stringify(db.rooms, null, 2)}</pre>`;
+                } else {
+                    output.innerHTML = `<span class="text-emerald-400">Query Executed Successfully: 1 row affected.</span>`;
+                }
+                document.getElementById('sqlExecDuration').textContent = `Execution time: ${(performance.now() - start).toFixed(2)}ms`;
+            } catch(e) {
+                output.innerHTML = `<span class="text-rose-400">Error: ${e.message}</span>`;
+            }
+        }
+
+        // ==========================================
+        // 6. INITIALIZATION & BINDINGS
+        // ==========================================
+        function setupEventListeners() {
+            // Navigation Tabs
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-btn').forEach(b => {
+                        b.classList.remove('active', 'bg-slate-800', 'text-amber-400', 'font-semibold');
+                    });
+                    btn.classList.add('active', 'bg-slate-800', 'text-amber-400', 'font-semibold');
+
+                    const tabId = btn.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-page').forEach(p => p.classList.add('hidden'));
+                    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+                    if (window.innerWidth < 768) {
+                        document.getElementById('sidebar').classList.add('-translate-x-full');
+                    }
+                });
+            });
+
+            // Mobile Menu
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            });
+
+            // Role selector
+            document.getElementById('roleSelect').addEventListener('change', (e) => setRole(e.target.value));
+
+            // Modals close
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.fixed').forEach(m => {
+                        if (m.id !== 'toastContainer') m.classList.add('hidden');
+                    });
+                });
+            });
+
+            // Forms Submit
+            document.getElementById('btnCreateRoom').addEventListener('click', () => openRoomModal());
+            document.getElementById('formRoom').addEventListener('submit', handleRoomSubmit);
+
+            document.getElementById('btnCreateGuest').addEventListener('click', () => openGuestModal());
+            document.getElementById('formGuest').addEventListener('submit', handleGuestSubmit);
+
+            document.getElementById('btnCreateBooking').addEventListener('click', () => openBookingModal());
+            document.getElementById('formBooking').addEventListener('submit', handleBookingSubmit);
+
+            document.getElementById('btnCreateMenuItem').addEventListener('click', () => openMenuModal());
+            document.getElementById('formMenu').addEventListener('submit', handleMenuSubmit);
+
+            document.getElementById('btnCreateStaff').addEventListener('click', () => openStaffModal());
+            document.getElementById('formStaff').addEventListener('submit', handleStaffSubmit);
+
+            document.getElementById('btnCreateBanner').addEventListener('click', () => openBannerModal());
+            document.getElementById('formBanner').addEventListener('submit', handleBannerSubmit);
+
+            // Cart
+            document.getElementById('btnOpenCartModal').addEventListener('click', openCartModal);
+            document.getElementById('btnClearCart').addEventListener('click', () => { activeCart = []; openCartModal(); });
+            document.getElementById('btnPlaceOrder').addEventListener('click', placeOrder);
+
+            // Export CSV & Reset
+            document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
+            document.getElementById('btnExecuteSQL').addEventListener('click', runDirectSQL);
+            document.getElementById('btnResetSeed').addEventListener('click', () => {
+                localStorage.removeItem(DB_STORAGE_KEY);
+                initDatabase();
+                renderAll();
+                showToast('Reset database to seed defaults!');
+            });
+
+            // Cloudflare Worker URL
+            document.getElementById('btnSaveWorkerUrl').addEventListener('click', () => {
+                const url = document.getElementById('workerUrlInput').value;
+                localStorage.setItem('asni_worker_url', url);
+                document.getElementById('syncText').textContent = url ? 'D1 Sync Connected' : 'SQLite Local Active';
+                showToast(url ? 'Worker API Connected!' : 'Using Local SQLite Engine');
+            });
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderRooms();
+            renderGuests();
+            renderBookings();
+            renderDining();
+            renderStaff();
+            renderLedger();
+            renderBanners();
+            renderSchema();
+        }
+
+        return {
+            init: function() {
+                initDatabase();
+                setupEventListeners();
+                renderAll();
+                setRole('Admin');
+            },
+            openRoomModal, deleteRoom,
+            openGuestModal, deleteGuest,
+            openBookingModal, deleteBooking,
+            openMenuModal, deleteMenuItem,
+            addToCart, removeFromCart, deleteOrder,
+            openStaffModal, deleteStaff,
+            openBannerModal, deleteBanner,
+            printReceipt
+        };
+    })();
+
+    // Launch application when ready
+    window.onload = function() {
+        AsniApp.init();
+    };
+    </script>
+</body>
+</html>
